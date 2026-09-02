@@ -6,7 +6,7 @@ public record PollRequest
 
 
     public string Summary { get; init; } = string.Empty;
-    public bool IsPublished { get; init; }
+    
 
     public DateOnly SatrtsAt { get; init; }
     public DateOnly EndsAt { get; init; }

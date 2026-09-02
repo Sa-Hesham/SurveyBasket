@@ -61,6 +61,7 @@ public static class DependencyInjection
     {
         Services.AddScoped<IPollService, Pollservice>();
         Services.AddScoped<IAuthService,AuthService>(); 
+        Services.AddScoped<IJwtProvider, JwtProvider> ();
         return Services;
     }
 
@@ -73,9 +74,9 @@ public static class DependencyInjection
 
         });
 
-       Services.AddIdentity<ApplicationUser,IdentityRole>()
-            .AddEntityFrameworkStores<AppDbContext>();   
-            
+        Services.AddIdentity<ApplicationUser, IdentityRole>()
+           .AddEntityFrameworkStores<AppDbContext>();   
+
         return Services;
     }
 

@@ -13,5 +13,5 @@ public class JWTSetting
     public string Audience { get; init; } = string.Empty;
     
     [Range(1, int.MaxValue)]
-    public int  intExpireMinutes { get; init; }
+    public int ExpireMinutes { get; init; }
 }

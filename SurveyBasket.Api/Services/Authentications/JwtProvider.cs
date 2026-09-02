@@ -34,7 +34,7 @@ public class JwtProvider(IOptions<JWTSetting> JWTOptions) : IJwtProvider
             claims: claims,
             issuer: _jWTOptions.Issuer,
             audience:_jWTOptions.Audience,
-            expires: DateTime.UtcNow.AddMinutes(_jWTOptions.intExpireMinutes),
+            expires: DateTime.UtcNow.AddMinutes(_jWTOptions.ExpireMinutes),
             signingCredentials:new SigningCredentials(symmetricSecurityKey,SecurityAlgorithms.HmacSha256)
 
             );
@@ -47,7 +47,39 @@ public class JwtProvider(IOptions<JWTSetting> JWTOptions) : IJwtProvider
 
 
 
-        return (token: accessToken, expiresin: _jWTOptions.intExpireMinutes*60);
+        return (token: accessToken, expiresin: _jWTOptions.ExpireMinutes*60);
        
+    }
+
+    public string? ValidateToken(string token)
+    {
+        var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jWTOptions.Key));
+        var tokenHandler = new JwtSecurityTokenHandler();
+
+        try
+        {
+            tokenHandler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = symmetricSecurityKey,
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ClockSkew =TimeSpan.Zero,
+
+
+
+
+            },out SecurityToken validatedToken);
+
+
+            var JwtToken = (JwtSecurityToken)validatedToken;
+            return JwtToken.Claims.First(x=>x.Type == JwtRegisteredClaimNames.Sub).Value;
+
+        }
+        catch
+        {
+            return null;
+        }
+
     }
 }

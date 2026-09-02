@@ -6,5 +6,14 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
     {
         builder.Property(u => u.FirstName).HasMaxLength(100);
         builder.Property(u => u.LastName).HasMaxLength(100);
+        builder.OwnsMany(u => u.RefreshTokens, r =>
+        {
+            r.ToTable("RefershTokens");
+            r.WithOwner().HasForeignKey("UserId");
+           
+
+        });
+            
+            
     }
 }
