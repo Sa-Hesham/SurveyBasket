@@ -1,6 +1,13 @@
 ﻿
+using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using SurveyBasket.Api.Data;
+using SurveyBasket.Api.Services.Authentications;
+using SurveyBasket.Api.Services.Polls;
+using System.Text;
 
 public static class DependencyInjection
 {
@@ -20,20 +27,22 @@ public static class DependencyInjection
 
         Services.DomainServices();
 
+        Services.AuthConfiguration(_configuration);
+
         Services.DataBase(_configuration);
 
         return Services;    
     }
 
 
-    public static IServiceCollection AddMapster(this IServiceCollection Services)
+   private   static IServiceCollection AddMapster(this IServiceCollection Services)
     {
         var mapping = TypeAdapterConfig.GlobalSettings;
         mapping.Scan(Assembly.GetExecutingAssembly());
         Services.AddSingleton<IMapper>(new Mapper(mapping));
         return Services;
     }
-    public static IServiceCollection AddValidion(this IServiceCollection Services)
+    private static IServiceCollection AddValidion(this IServiceCollection Services)
     {
         Services.AddValidatorsFromAssemblyContaining<Program>();
         Services.AddFluentValidationAutoValidation();
@@ -41,21 +50,22 @@ public static class DependencyInjection
         return Services;    
 
     }
-    public static IServiceCollection AddSwagger(this IServiceCollection Services)
+    private static IServiceCollection AddSwagger(this IServiceCollection Services)
     {
         Services.AddEndpointsApiExplorer();
         Services.AddSwaggerGen();
         return Services;
     }
 
-    public static IServiceCollection DomainServices (this IServiceCollection Services)
+    private static IServiceCollection DomainServices (this IServiceCollection Services)
     {
         Services.AddScoped<IPollService, Pollservice>();
+        Services.AddScoped<IAuthService,AuthService>(); 
         return Services;
     }
 
 
-    public static IServiceCollection DataBase(this IServiceCollection Services ,IConfiguration configuration)
+    private static IServiceCollection DataBase(this IServiceCollection Services ,IConfiguration configuration)
     {
         Services.AddDbContext<AppDbContext>(option =>
         {
@@ -63,6 +73,45 @@ public static class DependencyInjection
 
         });
 
+       Services.AddIdentity<ApplicationUser,IdentityRole>()
+            .AddEntityFrameworkStores<AppDbContext>();   
+            
         return Services;
     }
+
+
+    private static IServiceCollection  AuthConfiguration(this IServiceCollection Services, IConfiguration configuration)
+    {
+
+        //Services.Configure<JWTSetting>(configuration.GetSection(JWTSetting.Name));
+        Services.AddOptions<JWTSetting>()
+            .BindConfiguration(JWTSetting.Name)
+            .ValidateDataAnnotations()
+            .ValidateOnStart(); 
+
+        var jwtSettings = configuration.GetSection(JWTSetting.Name).Get<JWTSetting>();  
+        Services.AddAuthentication(option =>
+        {
+            option.DefaultAuthenticateScheme= JwtBearerDefaults.AuthenticationScheme;  
+            option.DefaultChallengeScheme= JwtBearerDefaults.AuthenticationScheme;
+
+        }).AddJwtBearer(o =>
+        {
+            o.TokenValidationParameters = new()
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings?.Key!)),
+                ValidIssuer = jwtSettings?.Issuer,
+                ValidAudience = jwtSettings?.Audience,
+
+            };
+        });
+       
+
+
+        return Services;
+    } 
 }

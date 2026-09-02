@@ -1,8 +1,7 @@
-﻿using SurveyBasket.Api.Persistence.Configuratuins;
-
+﻿
 namespace SurveyBasket.Api.Data;
 
-public class AppDbContext :DbContext
+public class AppDbContext :IdentityDbContext<ApplicationUser>
 {
     public AppDbContext(DbContextOptions<AppDbContext> Contetx ):base( Contetx )
     {
@@ -16,4 +15,6 @@ public class AppDbContext :DbContext
 
         base.OnModelCreating(modelBuilder);
     }
+
+    
 }
