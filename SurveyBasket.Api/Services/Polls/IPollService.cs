@@ -1,20 +1,22 @@
-﻿namespace SurveyBasket.Api.Services.Polls;
+﻿using SurveyBasket.Api.Dtos.Errors;
+
+namespace SurveyBasket.Api.Services.Polls;
 
 public interface IPollService
 {
 
-    Task<IEnumerable<Poll>> GetAllasync(CancellationToken ct =default);
+    Task<Result<IEnumerable<PollResponse>>> GetAllasync(CancellationToken ct =default);
 
-    Task<Poll?> GetByIdAsync (int id, CancellationToken ct = default);   
+    Task<Result<PollResponse>> GetByIdAsync (int id, CancellationToken ct = default);   
 
-   Task< Poll> CreateAsync (Poll poll, CancellationToken ct = default);    
+   Task<Result<PollResponse>> CreateAsync (Poll poll, CancellationToken ct = default);    
 
 
-   Task< bool> UpdateAsync (int id,Poll poll,CancellationToken ct = default);
+   Task< Result> UpdateAsync (int id,Poll poll,CancellationToken ct = default);
     
-    Task< bool>  DeleteAsync (int id,CancellationToken ct = default);    
+    Task< Result>  DeleteAsync (int id,CancellationToken ct = default);    
 
-    Task<bool> TogglePublishSatausAsync ( int id , CancellationToken ct  = default);
+    Task<Result> TogglePublishSatausAsync ( int id , CancellationToken ct  = default);
 
 
 

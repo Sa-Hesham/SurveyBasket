@@ -11,10 +11,10 @@ public class AuthController(IAuthService _Authservice) : ControllerBase
 
     public async Task<IActionResult> UserLoginAsync(LoginRequestDto request , CancellationToken token )
     {
-        var user = await _Authservice.LoginAsync(request.Email, request.Password, token);
+        var result  = await _Authservice.LoginAsync(request.Email, request.Password, token);
 
 
-       return  user is null ? BadRequest("Invalid Email or passwowrd ") : Ok(user); 
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
 
     }
 
@@ -22,21 +22,21 @@ public class AuthController(IAuthService _Authservice) : ControllerBase
 
     public async Task<IActionResult> Refreshtoken([FromBody] TokenRequest request, CancellationToken ct)
     {
-        var user = await _Authservice.GetRefreshTokenAysnc(request.token,request.Refreshtoken, ct) ;
+        var result = await _Authservice.GetRefreshTokenAysnc(request.token,request.Refreshtoken, ct) ;
 
 
-        return user is null ? BadRequest("invalid token "):Ok(user);        
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
     }
     [HttpPost("revoke-refresh-token")]
     public async Task<IActionResult> RevokedRefreshtoken([FromBody] TokenRequest request, CancellationToken ct)
     {
-        var isRevoked = await _Authservice.revokefreshTokenAysnc(request.token,request.Refreshtoken, ct) ;
+        var result = await _Authservice.revokefreshTokenAysnc(request.token,request.Refreshtoken, ct) ;
 
 
-        return isRevoked ? Ok() : BadRequest("Operation Failed");
+        return result.IsSuccess ? NoContent() : BadRequest(result.Error);
 
 
-           
+
     } 
    
 }

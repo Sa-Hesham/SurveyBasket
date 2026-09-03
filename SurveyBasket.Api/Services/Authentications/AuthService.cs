@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using SurveyBasket.Api.Dtos.Errors;
 using SurveyBasket.Api.Dtos.Security;
 using System.Security.Cryptography;
 
@@ -7,20 +8,20 @@ namespace SurveyBasket.Api.Services.Authentications;
 public class AuthService(UserManager<ApplicationUser> _user ,IJwtProvider _JwtProvider ) : IAuthService
 {
     private readonly int Expiretiontokendays = 5;
-     public async Task<UserResponse?> LoginAsync(string email, string password, CancellationToken ct = default)
+     public async Task<Result<UserResponse>> LoginAsync(string email, string password, CancellationToken ct = default)
     {
        var user =  await _user.FindByEmailAsync(email);
         if (user == null) {
 
 
-            return null; 
+            return Result.Failure<UserResponse>(UserError.Error);
         
         }
 
       var passwordISCorrect =   await _user.CheckPasswordAsync(user, password);
         if (!passwordISCorrect)
         {
-            return null;
+            return Result.Failure<UserResponse>(UserError.Error);
         }
         var (token, expries) = _JwtProvider.GenerateToken(user);
         var Refershtoken = GenrateRefreshtoken();
@@ -33,33 +34,36 @@ public class AuthService(UserManager<ApplicationUser> _user ,IJwtProvider _JwtPr
         });
         await _user.UpdateAsync(user);
 
-        return new UserResponse(user.Id ,user.Email!,user.FirstName,user.LastName,token , expries, Refershtoken, RefreshtokenExpiration);
+        var userResponse = new UserResponse(user.Id, user.Email!, user.FirstName, user.LastName, token, expries, Refershtoken, RefreshtokenExpiration);
 
 
-       
+        return Result.Succes(userResponse) ;  
 
-        
+
+
+
+
     }
 
-    public async Task<UserResponse?> GetRefreshTokenAysnc(string token, string refreshtoken, CancellationToken ct = default)
+    public async Task<Result<UserResponse>> GetRefreshTokenAysnc(string token, string refreshtoken, CancellationToken ct = default)
     {
        var userId =  _JwtProvider.ValidateToken(token);  
         if(userId is null)
         {
-            return null;
+            return Result.Failure<UserResponse>(UserError.Error);
         }
         // find user 
          var user = await _user.FindByIdAsync(userId);   
         if (user == null) 
-        { 
-            return null;
-        
+        {
+            return Result.Failure<UserResponse>(UserError.Error);
+
         }
         // find if user has token == Refreshtoken request
-     var userRefreshToken = user.RefreshTokens.SingleOrDefault(x=>x.Token == refreshtoken && x.IsActive ) ;
+         var userRefreshToken = user.RefreshTokens.SingleOrDefault(x=>x.Token == refreshtoken && x.IsActive ) ;
         if (userRefreshToken == null) {
 
-            return null;
+           return Result.Failure<UserResponse>(new("Refreshtoken.Error","Is not Activ / Expired ,or not Found"));
         
         }
 
@@ -73,20 +77,23 @@ public class AuthService(UserManager<ApplicationUser> _user ,IJwtProvider _JwtPr
             ExpiresOn = Expireon,    
         });
         await _user.UpdateAsync(user);
-        return new UserResponse(user.Id, user.Email!, user.FirstName, user.LastName, newtoken, ExpireIn, newRefreshtoken, Expireon);
+
+        var userResponse =   new UserResponse(user.Id, user.Email!, user.FirstName, user.LastName, newtoken, ExpireIn, newRefreshtoken, Expireon);
+
+        return Result.Succes(userResponse);
     }
-    public async Task<bool> revokefreshTokenAysnc(string token, string refreshtoken, CancellationToken ct = default)
+    public async Task<Result> revokefreshTokenAysnc(string token, string refreshtoken, CancellationToken ct = default)
     {
         var userId = _JwtProvider.ValidateToken(token);
         if (userId is null)
         {
-            return false;
+            return Result.Failure(UserError.Error); 
         }
         // find user 
         var user = await _user.FindByIdAsync(userId);
         if (user == null)
         {
-            return false;
+            return Result.Failure(UserError.Error);
 
         }
         // find if user has token == Refreshtoken request
@@ -94,7 +101,7 @@ public class AuthService(UserManager<ApplicationUser> _user ,IJwtProvider _JwtPr
         if (userRefreshToken == null)
         {
 
-            return false;
+            return Result.Failure<UserResponse>(new("Refreshtoken.Error", "Is not Activ / Expired ,or not Found"));
 
         }
 
@@ -102,7 +109,8 @@ public class AuthService(UserManager<ApplicationUser> _user ,IJwtProvider _JwtPr
         userRefreshToken.RevokedOn = DateTime.UtcNow;
         await _user.UpdateAsync(user);
 
-        return true;
+        return Result.Success();
+        
     }
 
     private static string  GenrateRefreshtoken()
