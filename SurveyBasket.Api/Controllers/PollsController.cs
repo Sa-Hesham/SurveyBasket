@@ -65,8 +65,8 @@ public class PollsController(IPollService pollService) :ControllerBase
         return result.IsSuccess ? CreatedAtAction(nameof(GetPollById), new { id = result.Value.Id }, result.Value)
             : Problem(
 
-            statusCode: StatusCodes.Status400BadRequest,
-            title: result.Error.Code,
+            statusCode: StatusCodes.Status409Conflict,
+            title: "Conflict",
             detail: result.Error.Message
 
 
