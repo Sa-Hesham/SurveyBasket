@@ -8,6 +8,7 @@ using SurveyBasket.Api.Data;
 using SurveyBasket.Api.Services.Authentications;
 using SurveyBasket.Api.Services.Polls;
 using System.Text;
+using System.Text.Json.Serialization;
 
 public static class DependencyInjection
 {
@@ -15,21 +16,30 @@ public static class DependencyInjection
     {
 
         Services.AddControllers();
+        Services.AddCors(option =>
+        {
+            option.AddDefaultPolicy(p =>
+            {
+                p.AllowAnyMethod();
+                p.AllowAnyHeader();
+                p.AllowAnyMethod();
+
+            });
+
+        });
+     
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
-        Services.AddSwagger();
-       
-        //mapster
-        Services.AddMapster();
-        //fluent Vlaodation
-        Services.AddValidion();
 
+        Services.AddSwagger();
+        Services.AddMapster();
+        Services.AddValidion();
 
         Services.DomainServices();
 
-        Services.AuthConfiguration(_configuration);
-
         Services.DataBase(_configuration);
+
+        Services.AuthConfiguration(_configuration);
 
         return Services;    
     }

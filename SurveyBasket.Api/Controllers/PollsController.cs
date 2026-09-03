@@ -1,17 +1,22 @@
-﻿using SurveyBasket.Api.Services.Polls;
+﻿using Microsoft.AspNetCore.Authorization;
+using SurveyBasket.Api.Services.Polls;
 using System.Reflection.Metadata.Ecma335;
+using System.Security.Claims;
 
 namespace SurveyBasket.Api.Controllers;
 
 [Route("api/[Controller]")]
 [ApiController]
+[Authorize]
 public class PollsController(IPollService pollService) :ControllerBase
 {
     private readonly IPollService _pollService = pollService;
-
+    
+    
     [HttpGet]
     public async Task<ActionResult<IEnumerable<PollResponse>>> GetPolls(CancellationToken ct )
     {
+      
         var Poll = await _pollService.GetAllasync(ct);
       
         return Ok(Poll.Adapt<IEnumerable<PollResponse>>());
@@ -42,7 +47,7 @@ public class PollsController(IPollService pollService) :ControllerBase
 
         var createdpoll = await _pollService.CreateAsync(poll);
 
-        return CreatedAtAction(nameof(GetPollById), new { id = createdpoll.Id }, createdpoll);
+        return CreatedAtAction(nameof(GetPollById), new { id = createdpoll.Id }, createdpoll.Adapt<PollResponse>());
 
     }
 
