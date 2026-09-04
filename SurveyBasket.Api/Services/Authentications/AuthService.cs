@@ -71,7 +71,9 @@ public class AuthService(UserManager<ApplicationUser> _user ,IJwtProvider _JwtPr
         userRefreshToken.RevokedOn = DateTime.UtcNow;
         var( newtoken, ExpireIn) = _JwtProvider.GenerateToken(user);
         var newRefreshtoken = GenrateRefreshtoken();
+
         var Expireon = DateTime.UtcNow.AddDays(Expiretiontokendays);
+
         user.RefreshTokens.Add(new RefreshToken{
             Token = newRefreshtoken,
             ExpiresOn = Expireon,    
