@@ -17,7 +17,7 @@ public class AuthController(IAuthService _Authservice) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : Problem(
 
             statusCode: StatusCodes.Status400BadRequest,
-            title: result.Error.Code,
+            title: "BadRequest",
             detail: result.Error.Message
 
 
@@ -37,7 +37,7 @@ public class AuthController(IAuthService _Authservice) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : Problem(
 
             statusCode: StatusCodes.Status400BadRequest,
-            title: result.Error.Code,
+            title: "BadRequest",
             detail: result.Error.Message
 
 
@@ -56,7 +56,7 @@ public class AuthController(IAuthService _Authservice) : ControllerBase
         return result.IsSuccess ? NoContent() : Problem(
 
             statusCode: StatusCodes.Status400BadRequest,
-            title: result.Error.Code,
+            title: "BadRequest",
             detail: result.Error.Message
 
 

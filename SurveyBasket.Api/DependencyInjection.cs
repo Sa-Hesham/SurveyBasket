@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SurveyBasket.Api.Data;
+using SurveyBasket.Api.Dtos.Errors;
 using SurveyBasket.Api.Services.Authentications;
 using SurveyBasket.Api.Services.Polls;
 using System.Text;
@@ -72,6 +73,8 @@ public static class DependencyInjection
         Services.AddScoped<IPollService, Pollservice>();
         Services.AddScoped<IAuthService,AuthService>(); 
         Services.AddScoped<IJwtProvider, JwtProvider> ();
+        Services.AddProblemDetails();
+        Services.AddExceptionHandler<GlobalExceptionHandling>();
         return Services;
     }
 

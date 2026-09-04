@@ -13,10 +13,21 @@ public class AppDbContext :IdentityDbContext<ApplicationUser>
     }
 
     public DbSet<Poll> Polls { get; set; }
+    public DbSet<Question> questions { get; set; }
+    public DbSet<Answer> Answers { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PollConfiguration).Assembly);
 
+        var EntitesFks = modelBuilder.Model
+            .GetEntityTypes()
+            .SelectMany(x => x.GetForeignKeys())
+            .Where(fk=>fk.DeleteBehavior==DeleteBehavior.Cascade &&!fk.IsOwnership);
+
+        foreach( var entityType in EntitesFks)
+        {
+            entityType.DeleteBehavior= DeleteBehavior.Restrict;  
+        }
         base.OnModelCreating(modelBuilder);
     }
 
