@@ -8,6 +8,7 @@ using SurveyBasket.Api.Data;
 using SurveyBasket.Api.Dtos.Errors;
 using SurveyBasket.Api.Services.Authentications;
 using SurveyBasket.Api.Services.Polls;
+using SurveyBasket.Api.Services.Questions;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -73,6 +74,7 @@ public static class DependencyInjection
         Services.AddScoped<IPollService, Pollservice>();
         Services.AddScoped<IAuthService,AuthService>(); 
         Services.AddScoped<IJwtProvider, JwtProvider> ();
+        Services.AddScoped<IQuestionService, QuestionService> ();
         Services.AddProblemDetails();
         Services.AddExceptionHandler<GlobalExceptionHandling>();
         return Services;
