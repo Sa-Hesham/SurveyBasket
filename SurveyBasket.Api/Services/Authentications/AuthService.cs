@@ -63,7 +63,7 @@ public class AuthService(UserManager<ApplicationUser> _user ,IJwtProvider _JwtPr
          var userRefreshToken = user.RefreshTokens.SingleOrDefault(x=>x.Token == refreshtoken && x.IsActive ) ;
         if (userRefreshToken == null) {
 
-           return Result.Failure<UserResponse>(new("Refreshtoken.Error","Is not Activ / Expired ,or not Found"));
+           return Result.Failure<UserResponse>(new("Refreshtoken.Error","Is not Activ / Expired ,or not Found",StatusCodes.Status401Unauthorized));
         
         }
 
@@ -103,7 +103,7 @@ public class AuthService(UserManager<ApplicationUser> _user ,IJwtProvider _JwtPr
         if (userRefreshToken == null)
         {
 
-            return Result.Failure<UserResponse>(new("Refreshtoken.Error", "Is not Activ / Expired ,or not Found"));
+            return Result.Failure<UserResponse>(new("Refreshtoken.Error", "Is not Activ / Expired ,or not Found", StatusCodes.Status401Unauthorized));
 
         }
 

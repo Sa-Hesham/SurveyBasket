@@ -14,16 +14,7 @@ public class AuthController(IAuthService _Authservice) : ControllerBase
         var result  = await _Authservice.LoginAsync(request.Email, request.Password, token);
 
 
-        return result.IsSuccess ? Ok(result.Value) : Problem(
-
-            statusCode: StatusCodes.Status400BadRequest,
-            title: "BadRequest",
-            detail: result.Error.Message
-
-
-
-
-            );
+        return result.IsSuccess ? Ok(result.Value) : result.toProblem();
 
     }
 
@@ -34,17 +25,7 @@ public class AuthController(IAuthService _Authservice) : ControllerBase
         var result = await _Authservice.GetRefreshTokenAysnc(request.token,request.Refreshtoken, ct) ;
 
 
-        return result.IsSuccess ? Ok(result.Value) : Problem(
-
-            statusCode: StatusCodes.Status400BadRequest,
-            title: "BadRequest",
-            detail: result.Error.Message
-
-
-
-
-            );
-
+        return result.IsSuccess ? Ok(result.Value) : result.toProblem();
 
     }
     [HttpPost("revoke-refresh-token")]
@@ -53,17 +34,7 @@ public class AuthController(IAuthService _Authservice) : ControllerBase
         var result = await _Authservice.revokefreshTokenAysnc(request.token,request.Refreshtoken, ct) ;
 
 
-        return result.IsSuccess ? NoContent() : Problem(
-
-            statusCode: StatusCodes.Status400BadRequest,
-            title: "BadRequest",
-            detail: result.Error.Message
-
-
-
-
-            );
-
+        return result.IsSuccess ? NoContent() : result.toProblem();
 
 
     } 

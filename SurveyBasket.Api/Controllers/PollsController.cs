@@ -22,15 +22,18 @@ public class PollsController(IPollService pollService) :ControllerBase
       
         var result = await _pollService.GetAllasync(ct);
       
-        return result.IsSuccess ?Ok(result.Value) : Problem(
+        return result.IsSuccess ?Ok(result.Value) : result.toProblem();
+
+    }
 
 
-            statusCode: StatusCodes.Status404NotFound,
-            title: result.Error.Code,
-            detail: result.Error.Message
+    [HttpGet("Current")]
+    public async Task<IActionResult> GetCurrent(CancellationToken ct)
+    {
 
+        var result = await _pollService.GetCurrentAsync(ct);
 
-            );
+        return result.IsSuccess ? Ok(result.Value) : result.toProblem();
 
     }
 
@@ -41,16 +44,8 @@ public class PollsController(IPollService pollService) :ControllerBase
        var result= await _pollService.GetByIdAsync(id,ct)   ;
 
 
-        return result.IsSuccess ? Ok(result.Value): Problem(
-            
-            
-            statusCode:StatusCodes.Status404NotFound,
-            title : result.Error.Code,
-            detail: result.Error.Message
+        return result.IsSuccess ? Ok(result.Value): result.toProblem();
 
-
-            );    
-    
     }
 
 
@@ -62,17 +57,8 @@ public class PollsController(IPollService pollService) :ControllerBase
 
         var result = await _pollService.CreateAsync(poll,ct);
 
-        return result.IsSuccess ? CreatedAtAction(nameof(GetPollById), new { id = result.Value.Id }, result.Value)
-            : Problem(
-
-            statusCode: StatusCodes.Status409Conflict,
-            title: "Conflict",
-            detail: result.Error.Message
-
-
-
-
-            );
+        return result.IsSuccess ? CreatedAtAction(nameof(GetPollById), new { id = result.Value.Id }, result.Value) :
+            result.toProblem();
 
 
     }
@@ -90,24 +76,15 @@ public class PollsController(IPollService pollService) :ControllerBase
         var result = await _pollService.UpdateAsync(id, poll, ct);
 
 
-        return result.IsSuccess? Ok("Poll saved Successfully") : Problem(
-            
-            statusCode:StatusCodes.Status400BadRequest ,
-            title:result.Error.Code,
-            detail:result.Error.Message
-            
-            
-            
-            
-            ); 
-
-        
+        return result.IsSuccess? Ok("Poll saved Successfully") : result.toProblem();
 
 
 
 
 
-        }
+
+
+    }
 
     [HttpDelete("{id}")]
 
@@ -119,17 +96,7 @@ public class PollsController(IPollService pollService) :ControllerBase
 
 
         return result.IsSuccess ? Ok(new { message = $"Poll with {id} is Deleted successfully. " })
-            : Problem(
-
-            statusCode: StatusCodes.Status400BadRequest,
-            title: result.Error.Code,
-            detail: result.Error.Message
-
-
-
-
-            );
-
+            : result.toProblem();
 
 
     }
@@ -144,16 +111,7 @@ public class PollsController(IPollService pollService) :ControllerBase
 
 
         return result.IsSuccess ? Ok(new { message = $"Poll with {id} bublished  is changed successfully. " })
-            : Problem(
-
-            statusCode: StatusCodes.Status400BadRequest,
-            title: result.Error.Code,
-            detail: result.Error.Message
-
-
-
-
-            );
+            : result.toProblem();
 
 
 

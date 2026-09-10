@@ -27,9 +27,7 @@ public class QuestionController(IQuestionService questionService) : ControllerBa
             return Ok(result.Value);
         }
 
-        return result.Error.Equals(QuestionError.QuestionDublicated)
-            ? result.toProblem(StatusCodes.Status409Conflict)
-            : result.toProblem(StatusCodes.Status404NotFound);
+        return result.toProblem();
 
     }
 
@@ -43,7 +41,7 @@ public class QuestionController(IQuestionService questionService) : ControllerBa
         {
             return Ok(result.Value);
         }
-        return result.toProblem(StatusCodes.Status404NotFound);
+        return result.toProblem();
     }
 
 
@@ -60,7 +58,7 @@ public class QuestionController(IQuestionService questionService) : ControllerBa
         }
 
 
-        return result.toProblem(StatusCodes.Status404NotFound);
+        return result.toProblem();
 
     }
 
@@ -72,7 +70,7 @@ public class QuestionController(IQuestionService questionService) : ControllerBa
         var result = await _questionService.ToggleStatusAsync(pollid, id, ct);
 
 
-        return result.IsSuccess ? NoContent() : result.toProblem(StatusCodes.Status404NotFound);
+        return result.IsSuccess ? NoContent() : result.toProblem();
 
 
     }
@@ -93,10 +91,7 @@ public class QuestionController(IQuestionService questionService) : ControllerBa
             return NoContent();
         }
 
-        return result.Error.Equals(QuestionError.QuestionDublicated)
-            ? result.toProblem(StatusCodes.Status409Conflict)
-            : result.toProblem(StatusCodes.Status404NotFound);
-
+        return result.toProblem();
     }
 }
 

@@ -63,6 +63,36 @@ public class QuestionService(AppDbContext context) : IQuestionService
         return Result.Succes(questins.Adapt<IEnumerable<QuestionResponse>>());
     }
 
+    public async Task<Result<IEnumerable<QuestionResponse>>> GetAvilabeQuestionAsync(int pollId, string userid, CancellationToken ct = default)
+    {
+        var IsuserExist =  await _context.Votes.AnyAsync(x=>x.UserId == userid, ct) ;
+
+        if (IsuserExist)
+            return Result.Failure<IEnumerable<QuestionResponse>>(UserError.UserDublicated);
+        //cheak If PollExist 
+
+        var IsPollExist = await _context.Polls
+            .AnyAsync(x => x.IsPublished == true && x.SatrtsAt <= DateOnly.FromDateTime(DateTime.UtcNow) && x.EndsAt >= DateOnly.FromDateTime(DateTime.UtcNow));
+        if(!IsPollExist)
+            return Result.Failure<IEnumerable<QuestionResponse>>(PollError.PollIsNotFound);
+
+        //question for This poll 
+        var Questions = await _context.questions
+            .Where(x => x.PollId == pollId && x.IsActive)
+            .Include(x => x.Answers)
+            .Select(q => new QuestionResponse(
+
+                q.Id,
+                q.Content,
+                q.Answers.Where(a => a.IsActive).Select(a => new AnswerResponse( a.Id, a.Content ))
+
+                ))
+            .AsNoTracking()
+            .ToListAsync(ct);
+
+        return Result.Succes<IEnumerable<QuestionResponse>>(Questions);
+    }
+
     public async Task<Result<QuestionResponse>> GetById(int pollId, int qustionId, CancellationToken ct = default)
     {
 

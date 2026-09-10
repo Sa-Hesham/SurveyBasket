@@ -15,6 +15,10 @@ public class AppDbContext :IdentityDbContext<ApplicationUser>
     public DbSet<Poll> Polls { get; set; }
     public DbSet<Question> questions { get; set; }
     public DbSet<Answer> Answers { get; set; }
+
+    public DbSet<Vote> Votes { get; set; }  
+
+    public DbSet<VoteAnswer> voteAnswers { get; set; }  
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PollConfiguration).Assembly);
