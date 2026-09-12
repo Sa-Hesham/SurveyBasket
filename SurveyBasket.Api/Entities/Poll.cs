@@ -16,7 +16,8 @@ public  sealed class Poll :BaseEntity
     public DateOnly SatrtsAt { get; set; }
     public DateOnly EndsAt { get; set; }
 
-    ICollection<Question> questions { get; set; } = [];
+    public ICollection<Question> questions { get; set; } = [];
+   public  ICollection<Vote> Votes { get; set; } = [];
         
 
 }

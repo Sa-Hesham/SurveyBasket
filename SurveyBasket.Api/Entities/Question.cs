@@ -16,6 +16,7 @@ public sealed  class Question :BaseEntity
 
 
     public ICollection<Answer> Answers { get; set; } = [];
+    public ICollection<VoteAnswer> votes { get; set; } = [];
 
 
 }

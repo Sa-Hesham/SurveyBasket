@@ -1,0 +1,97 @@
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using SurveyBasket.Api.Dtos.Errors;
+using SurveyBasket.Api.Dtos.Questions;
+using SurveyBasket.Api.Services.Questions;
+
+namespace SurveyBasket.Api.Controllers;
+
+[Route("api/Poll/{PollId}/[controller]")]
+[ApiController]
+
+public class QuestionController(IQuestionService questionService) : ControllerBase
+{
+    private readonly IQuestionService _questionService = questionService;
+
+    [HttpPost]
+
+    public async Task<IActionResult> AddQuestionasync([FromRoute] int PollId, [FromBody] QuestionRequest request, CancellationToken ct)
+    {
+
+        var result = await _questionService.CreatQuestionaysnc(PollId, request, ct);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
+
+        return result.toProblem();
+
+    }
+
+
+    [HttpGet]
+
+    public async Task<IActionResult> Getall([FromRoute] int PollId, CancellationToken ct)
+    {
+        var result = await _questionService.GetAllQuestionAsync(PollId, ct);
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
+        return result.toProblem();
+    }
+
+
+
+    [HttpGet("{id}")]
+
+    public async Task<IActionResult> GetById([FromRoute] int PollId, [FromRoute] int id, CancellationToken ct)
+    {
+        var result = await _questionService.GetById(PollId, id, ct);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
+
+
+        return result.toProblem();
+
+    }
+
+
+    [HttpPut("{Id}/ToggleStatus")] 
+
+    public async Task<IActionResult>ToggleStatus([FromRoute] int PollId, [FromRoute] int id, CancellationToken ct)
+    {
+        var result = await _questionService.ToggleStatusAsync(PollId, id, ct);
+
+
+        return result.IsSuccess ? NoContent() : result.toProblem();
+
+
+    }
+
+
+
+    [HttpPut("{id}")]
+
+
+
+    public async Task<IActionResult> UpdateQuestion ([FromRoute] int PollId, [FromRoute] int id, [FromBody]QuestionRequest request  ,CancellationToken ct)
+    {
+      var result =   await _questionService.UpdateAsync(PollId, id, request, ct);
+
+
+        if (result.IsSuccess)
+        {
+            return NoContent();
+        }
+
+        return result.toProblem();
+    }
+}
+

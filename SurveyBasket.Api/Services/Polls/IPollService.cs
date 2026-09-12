@@ -7,6 +7,8 @@ public interface IPollService
 
     Task<Result<IEnumerable<PollResponse>>> GetAllasync(CancellationToken ct =default);
 
+    Task<Result<IEnumerable<PollResponse>>> GetCurrentAsync (CancellationToken ct = default);    
+
     Task<Result<PollResponse>> GetByIdAsync (int id, CancellationToken ct = default);   
 
    Task<Result<PollResponse>> CreateAsync (Poll poll, CancellationToken ct = default);    
