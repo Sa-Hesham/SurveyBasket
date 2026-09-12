@@ -70,4 +70,42 @@ public class VoteResultService(AppDbContext context) :  IVoteResultService
         return Result.Succes<IEnumerable<VotesPerDayResponse>>(votesPerDay);
            
     }
+
+
+    public async Task<Result<IEnumerable<VotesPerQuestionResponse>>> GetVotesPerQuestionAsync(int PollId, CancellationToken ct = default)
+    {
+
+        var PollIsExist = await _context.Polls.AnyAsync(x => x.Id == PollId, ct);
+
+        if (!PollIsExist)
+            return Result.Failure<IEnumerable<VotesPerQuestionResponse>>(PollError.PollINotDEleted);
+
+
+        var question = await _context.voteAnswers
+            .Where(x => x.Vote.PollId == PollId)
+            .Select(v => new VotesPerQuestionResponse(
+
+                v.Question.Content ,
+                v.Question.votes
+                .GroupBy(v => new {AnswerId= v.Answer.Id,AnswerContent = v.Answer.Content})
+                .Select(g=>new VotesPerAnswerResponse(
+                    
+                    g.Key.AnswerContent,
+
+                    g.Count()
+
+                    
+                    
+                    ))
+
+
+
+
+                )).ToListAsync(ct);
+
+
+        return Result.Succes<IEnumerable<VotesPerQuestionResponse>>(question);
+
+
+    }
 }
