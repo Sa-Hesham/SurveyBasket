@@ -1,10 +1,16 @@
 
 
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.Dependcies(builder.Configuration);
-
+builder.Host.UseSerilog((Context, Configuration) =>
+{
+    Configuration.ReadFrom.Configuration(Context.Configuration);
+   
+});  
 
 var app = builder.Build();
 
