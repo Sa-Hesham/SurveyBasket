@@ -1,4 +1,5 @@
 ﻿
+using SurveyBasket.Api.Services.VoteResultSevices;
 using SurveyBasket.Api.Services.VoteService;
 
 public static class DependencyInjection
@@ -65,6 +66,7 @@ public static class DependencyInjection
         Services.AddScoped<IJwtProvider, JwtProvider> ();
         Services.AddScoped<IQuestionService, QuestionService> ();
         Services.AddScoped<IVoteService, VoteService> ();
+        Services.AddScoped<IVoteResultService, VoteResultService> ();
         Services.AddProblemDetails();
         Services.AddExceptionHandler<GlobalExceptionHandling>();
         return Services;
