@@ -12,6 +12,8 @@ builder.Host.UseSerilog((Context, Configuration) =>
    
 });  
 
+builder.Services.AddDistributedMemoryCache();   
+
 var app = builder.Build();
 
 
@@ -23,6 +25,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseSerilogRequestLogging();
+
 
 app.UseCors();
 
