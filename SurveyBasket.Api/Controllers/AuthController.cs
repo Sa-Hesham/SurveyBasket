@@ -37,6 +37,34 @@ public class AuthController(IAuthService _Authservice) : ControllerBase
         return result.IsSuccess ? NoContent() : result.toProblem();
 
 
-    } 
-   
+    }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken ct)
+    {
+        var result = await _Authservice.UserRegister(request, ct);
+
+
+        return result.IsSuccess ? Ok() : result.toProblem();
+
+    }
+    [HttpPost("confirm-Email")]
+    public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest request, CancellationToken ct)
+    {
+        var result = await _Authservice.ConfirmEmail(request, ct);
+
+
+        return result.IsSuccess ? Ok() : result.toProblem();
+
+    }
+    [HttpPost("resend-confirm-Email")]
+    public async Task<IActionResult> ResendConfirmEmail([FromBody] ResendConfirmationEmailRequest request, CancellationToken ct)
+    {
+        var result = await _Authservice.ResnedEmailConfirmation(request);
+
+
+        return result.IsSuccess ? Ok() : result.toProblem();
+
+    }
+
 }
