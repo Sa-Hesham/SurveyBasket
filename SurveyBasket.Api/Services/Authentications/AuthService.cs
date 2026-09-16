@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.UI.Services;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
 using SurveyBasket.Api.Helper;
 using System.Security.Cryptography;
@@ -245,7 +246,10 @@ public class AuthService(UserManager<ApplicationUser> _user,
 
         );
 
-        await _email.SendEmailAsync(user.Email!, "✔️ Email Confiramtion", body);
+        BackgroundJob.Enqueue(() => _email.SendEmailAsync(user.Email!, "✔️ Email Confiramtion", body));
+
+
+          await Task.CompletedTask;
 
 
 
