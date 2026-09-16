@@ -224,6 +224,49 @@ public class AuthService(UserManager<ApplicationUser> _user,
 
     }
 
+
+    public async Task<Result> ResendForgetPasswordConfirmation(string email)
+    {
+        if(await _user.FindByEmailAsync(email) is not { } usersystem)
+            return Result.Success();
+
+        var code =  await  _user.GeneratePasswordResetTokenAsync(usersystem);
+        code = WebEncoders.Base64UrlEncode (Encoding.UTF8.GetBytes(code));
+
+        await SendPassowrdConfirmationAsync (usersystem, code)   ;
+
+        return Result.Success();
+    }
+
+    public async Task<Result> ResetPassword(ResetPasswordRequest request)
+    {
+
+        var userSystem = await _user.FindByEmailAsync(request.Email);
+
+        if (userSystem is null || !userSystem.EmailConfirmed)
+        {
+            return Result.Failure(UserError.InvalidCode);
+        }
+
+        IdentityResult result;
+
+        try
+        {
+            var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Code));
+            result= await _user.ResetPasswordAsync(userSystem, code,request.NewPassword) ;
+           
+        }
+        catch (FormatException)
+        {
+            result = IdentityResult.Failed(_user.ErrorDescriber.InvalidToken());
+          
+        }
+
+        if (result.Succeeded)
+            return Result.Success();
+        var errror = result.Errors.First();
+        return Result.Failure(new Error(errror.Code, errror.Description, StatusCodes.Status401Unauthorized));
+    }
     private static string GenrateRefreshtoken()
     {
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
@@ -247,6 +290,30 @@ public class AuthService(UserManager<ApplicationUser> _user,
         );
 
         BackgroundJob.Enqueue(() => _email.SendEmailAsync(user.Email!, "✔️ Email Confiramtion", body));
+
+
+          await Task.CompletedTask;
+
+
+
+    }
+    private async  Task SendPassowrdConfirmationAsync ( ApplicationUser user  , string code  )
+    {
+        var origin = _httpcontext.HttpContext?.Request.Headers.Origin;
+
+        var body = EmailBodyHelper.GenerateEmailBody("ForgetPassword",
+            new Dictionary<string, string>
+            {
+
+                    {"{{name}}"  ,user.FirstName } ,
+                    {"{{action_url}}" , $"{origin}/api/Auth/Forget-Password?UserEmail={user.Email}&code={code}" }
+
+
+            }
+
+        );
+
+        BackgroundJob.Enqueue(() => _email.SendEmailAsync(user.Email!, "✔️ Survey Bakset : Passowrd Confiramtion", body));
 
 
           await Task.CompletedTask;

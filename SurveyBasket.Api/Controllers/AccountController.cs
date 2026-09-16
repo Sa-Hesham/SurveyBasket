@@ -23,7 +23,7 @@ public class AccountController(IUserService userService) : ControllerBase
     }
 
 
-    [HttpPost]
+    [HttpPut("info")]
 
     public async Task<IActionResult>UpdateProfile([FromBody]  UpdateProfileRequest request)
     {   
@@ -32,6 +32,18 @@ public class AccountController(IUserService userService) : ControllerBase
 
 
         return NoContent();
+
+    }
+
+    [HttpPut("change-password")]
+
+    public async Task<IActionResult>UpdateProfile(  [FromBody] ChangePasswordRequest request)
+    {   
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var result =  await _userService.ChangePassword(userId!, request);
+
+
+        return result.IsSuccess ? NoContent() : result.toProblem();
 
     }
 }
