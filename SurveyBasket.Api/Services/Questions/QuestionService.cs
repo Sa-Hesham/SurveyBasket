@@ -1,13 +1,16 @@
-﻿using SurveyBasket.Api.Dtos.Errors;
+﻿using Microsoft.Extensions.Caching.Hybrid;
+using SurveyBasket.Api.Dtos.Errors;
 using SurveyBasket.Api.Dtos.Questions;
+
 using SurveyBasket.Api.Services.Polls;
 
 namespace SurveyBasket.Api.Services.Questions;
 
-public class QuestionService(AppDbContext context) : IQuestionService
+public class QuestionService(AppDbContext context ,HybridCache hybridCache  ,ILogger<QuestionService> logger ) : IQuestionService
 {
     private readonly AppDbContext _context = context;
-
+    private readonly HybridCache _hybridCache = hybridCache;
+    private readonly ILogger<QuestionService> logger = logger;
 
     public async Task<Result<QuestionResponse>> CreatQuestionaysnc(int pollId,QuestionRequest request, CancellationToken ct = default)
     {
@@ -76,21 +79,34 @@ public class QuestionService(AppDbContext context) : IQuestionService
         if(!IsPollExist)
             return Result.Failure<IEnumerable<QuestionResponse>>(PollError.PollIsNotFound);
 
+        var Key = $"Questions-{pollId}";
         //question for This poll 
-        var Questions = await _context.questions
-            .Where(x => x.PollId == pollId && x.IsActive)
-            .Include(x => x.Answers)
-            .Select(q => new QuestionResponse(
+        var Questions = await _hybridCache.GetOrCreateAsync<IEnumerable<QuestionResponse>>(Key, async ct =>
+        {
+            return await _context.questions
+             .Where(x => x.PollId == pollId && x.IsActive)
+             .Include(x => x.Answers)
+             .Select(q => new QuestionResponse(
 
-                q.Id,
-                q.Content,
-                q.Answers.Where(a => a.IsActive).Select(a => new AnswerResponse( a.Id, a.Content ))
+                 q.Id,
+                 q.Content,
+                 q.Answers.Where(a => a.IsActive).Select(a => new AnswerResponse(a.Id, a.Content))
 
-                ))
-            .AsNoTracking()
-            .ToListAsync(ct);
+                 ))
+             .AsNoTracking()
+             .ToListAsync(ct);
 
-        return Result.Succes<IEnumerable<QuestionResponse>>(Questions);
+
+
+        },
+        new HybridCacheEntryOptions
+        {
+            Expiration = TimeSpan.FromMinutes(10)
+        }
+
+
+        );
+        return Result.Succes(Questions);
     }
 
     public async Task<Result<QuestionResponse>> GetById(int pollId, int qustionId, CancellationToken ct = default)
@@ -125,7 +141,7 @@ public class QuestionService(AppDbContext context) : IQuestionService
 
         await _context.SaveChangesAsync(ct);
 
-
+        await _hybridCache.RemoveAsync($"Questions-{pollId}", ct);
         return Result.Success();
 
 
@@ -190,8 +206,9 @@ public class QuestionService(AppDbContext context) : IQuestionService
 
 
         await _context.SaveChangesAsync(ct);
+        await _hybridCache.RemoveAsync($"Questions-{pollId}", ct);
 
-       return  Result.Success();   
+        return  Result.Success();   
 
 
 

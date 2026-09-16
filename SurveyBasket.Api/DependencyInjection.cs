@@ -1,4 +1,7 @@
 ﻿
+
+using Hangfire;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using SurveyBasket.Api.Services.VoteResultSevices;
 using SurveyBasket.Api.Services.VoteService;
 
@@ -8,6 +11,8 @@ public static class DependencyInjection
     {
 
         Services.AddControllers();
+
+        Services.AddHybridCache();
         Services.AddCors(option =>
         {
             option.AddDefaultPolicy(p =>
@@ -32,6 +37,7 @@ public static class DependencyInjection
         Services.DataBase(_configuration);
 
         Services.AuthConfiguration(_configuration);
+        Services.AddBackGroundJobs(_configuration);
 
         return Services;    
     }
@@ -67,6 +73,10 @@ public static class DependencyInjection
         Services.AddScoped<IQuestionService, QuestionService> ();
         Services.AddScoped<IVoteService, VoteService> ();
         Services.AddScoped<IVoteResultService, VoteResultService> ();
+        Services.AddScoped<IPollNotfication, PollNotfication> ();
+        Services.AddScoped<IEmailSender, EmailService> ();
+        Services.AddHttpContextAccessor();  
+  
         Services.AddProblemDetails();
         Services.AddExceptionHandler<GlobalExceptionHandling>();
         return Services;
@@ -82,7 +92,8 @@ public static class DependencyInjection
         });
 
         Services.AddIdentity<ApplicationUser, IdentityRole>()
-           .AddEntityFrameworkStores<AppDbContext>();   
+           .AddEntityFrameworkStores<AppDbContext>()
+           .AddDefaultTokenProviders();   
 
         return Services;
     }
@@ -95,9 +106,11 @@ public static class DependencyInjection
         Services.AddOptions<JWTSetting>()
             .BindConfiguration(JWTSetting.Name)
             .ValidateDataAnnotations()
-            .ValidateOnStart(); 
+            .ValidateOnStart();
 
-        var jwtSettings = configuration.GetSection(JWTSetting.Name).Get<JWTSetting>();  
+        Services.Configure<EmailSetting>(configuration.GetSection(EmailSetting.Name));
+
+              var jwtSettings = configuration.GetSection(JWTSetting.Name).Get<JWTSetting>();  
         Services.AddAuthentication(option =>
         {
             option.DefaultAuthenticateScheme= JwtBearerDefaults.AuthenticationScheme;  
@@ -117,9 +130,33 @@ public static class DependencyInjection
 
             };
         });
-       
 
+        Services.Configure<IdentityOptions>(options =>
+        {
+            options.Password.RequiredLength = 8; 
+            options.SignIn.RequireConfirmedEmail = true;
+            options.User.RequireUniqueEmail = true;
+
+        });
 
         return Services;
     } 
+
+
+
+    private static IServiceCollection AddBackGroundJobs (this  IServiceCollection services , IConfiguration Configuration)
+    {
+        services.AddHangfire(configuration => configuration
+      .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+      .UseSimpleAssemblyNameTypeSerializer()
+      .UseRecommendedSerializerSettings()
+      .UseSqlServerStorage(Configuration.GetConnectionString("HangfireConnection")));
+
+        // Add the processing server as IHostedService
+        services.AddHangfireServer();
+
+
+        return services;    
+
+    }
 }
