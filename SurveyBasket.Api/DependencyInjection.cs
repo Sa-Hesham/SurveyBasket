@@ -2,6 +2,7 @@
 
 using Hangfire;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using SurveyBasket.Api.Services.UserInfo;
 using SurveyBasket.Api.Services.VoteResultSevices;
 using SurveyBasket.Api.Services.VoteService;
 
@@ -75,6 +76,7 @@ public static class DependencyInjection
         Services.AddScoped<IVoteResultService, VoteResultService> ();
         Services.AddScoped<IPollNotfication, PollNotfication> ();
         Services.AddScoped<IEmailSender, EmailService> ();
+        Services.AddScoped<IUserService, UserService> ();
         Services.AddHttpContextAccessor();  
   
         Services.AddProblemDetails();
@@ -134,7 +136,7 @@ public static class DependencyInjection
         Services.Configure<IdentityOptions>(options =>
         {
             options.Password.RequiredLength = 8; 
-            options.SignIn.RequireConfirmedEmail = true;
+           options.SignIn.RequireConfirmedEmail = true;
             options.User.RequireUniqueEmail = true;
 
         });
