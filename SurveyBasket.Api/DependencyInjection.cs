@@ -93,7 +93,7 @@ public static class DependencyInjection
 
         });
 
-        Services.AddIdentity<ApplicationUser, IdentityRole>()
+        Services.AddIdentity<ApplicationUser, ApplicationRole>()
            .AddEntityFrameworkStores<AppDbContext>()
            .AddDefaultTokenProviders();   
 

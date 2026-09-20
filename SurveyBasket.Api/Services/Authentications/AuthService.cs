@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
 using SurveyBasket.Api.Helper;
+using SurveyBasket.Api.Mapping.Consts;
 using System.Security.Cryptography;
 
 namespace SurveyBasket.Api.Services.Authentications;
@@ -10,12 +11,15 @@ public class AuthService(UserManager<ApplicationUser> _user,
     SignInManager<ApplicationUser>signInManager ,
     IJwtProvider _JwtProvider 
     ,IEmailSender email,
-    IHttpContextAccessor httpcontext, ILogger<AuthService> logger ) : IAuthService
+    IHttpContextAccessor httpcontext, 
+    AppDbContext context
+    ,ILogger<AuthService> logger ) : IAuthService
 {
     private readonly int Expiretiontokendays = 5;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly IEmailSender _email = email;
     private readonly IHttpContextAccessor _httpcontext = httpcontext;
+    private readonly AppDbContext _context = context;
     private readonly ILogger<AuthService> _logger = logger;
 
     public async Task<Result<UserResponse>> LoginAsync(string email, string password, CancellationToken ct = default)
@@ -34,7 +38,8 @@ public class AuthService(UserManager<ApplicationUser> _user,
         var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
         if (result.Succeeded)
         {
-            var (token, expries) = _JwtProvider.GenerateToken(user);
+            var (roles, permissions) = await GeTUSerRolesAndPermisions(user, ct);
+            var (token, expries) = _JwtProvider.GenerateToken(user,roles,permissions);
             var Refershtoken = GenrateRefreshtoken();
             var RefreshtokenExpiration = DateTime.UtcNow.AddDays(Expiretiontokendays);
             user.RefreshTokens.Add(new RefreshToken
@@ -83,7 +88,8 @@ public class AuthService(UserManager<ApplicationUser> _user,
 
         // revoke refrsh token 
         userRefreshToken.RevokedOn = DateTime.UtcNow;
-        var( newtoken, ExpireIn) = _JwtProvider.GenerateToken(user);
+        var (roles, permissions) = await GeTUSerRolesAndPermisions(user, ct);
+        var ( newtoken, ExpireIn) = _JwtProvider.GenerateToken(user, roles, permissions);
         var newRefreshtoken = GenrateRefreshtoken();
 
         var Expireon = DateTime.UtcNow.AddDays(Expiretiontokendays);
@@ -170,6 +176,7 @@ public class AuthService(UserManager<ApplicationUser> _user,
 
 
     }
+
     public async Task<Result> ConfirmEmail(ConfirmEmailRequest request, CancellationToken ct)
     {
 
@@ -194,8 +201,12 @@ public class AuthService(UserManager<ApplicationUser> _user,
 
         }
         var result = await _user.ConfirmEmailAsync(user, code);
-        if(result.Succeeded) 
+        if(result.Succeeded)
+        {
+           await _user.AddToRoleAsync(user, DefaultRules.MemberRuleName);
             return Result.Success();
+        }
+          
 
          var error = result.Errors.First();
 
@@ -319,6 +330,33 @@ public class AuthService(UserManager<ApplicationUser> _user,
           await Task.CompletedTask;
 
 
+
+    }
+
+
+
+    private async Task<(IEnumerable<string> roles , IEnumerable<string>Permisinos )> GeTUSerRolesAndPermisions ( ApplicationUser user  ,CancellationToken ct =default)
+    {
+
+        var userroles = await _user.GetRolesAsync(user);
+
+        var rolePermissions = await (from r in _context.Roles
+                               join p in _context.RoleClaims
+                               on r.Id equals p.RoleId
+                               where userroles.Contains(r.Name!)
+                               select (p.ClaimValue)
+
+                               ).Distinct()
+                               .ToListAsync(ct);
+
+
+
+
+
+
+
+
+        return (userroles, rolePermissions);
 
     }
 }

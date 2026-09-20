@@ -3,7 +3,7 @@ using System.Security.Claims;
 
 namespace SurveyBasket.Api.Data;
 
-public class AppDbContext :IdentityDbContext<ApplicationUser>
+public class AppDbContext :IdentityDbContext<ApplicationUser,ApplicationRole,string>
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
 
