@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Primitives;
 using SurveyBasket.Api.Dtos.Errors;
+using SurveyBasket.Api.Mapping.Consts;
 using SurveyBasket.Api.Services.Polls;
 using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
@@ -17,6 +18,7 @@ public class PollsController(IPollService pollService) :ControllerBase
     
     
     [HttpGet]
+    [Authorize(Policy = Permissions.GetRoles)]
     public async Task<ActionResult<IEnumerable<PollResponse>>> GetPolls(CancellationToken ct )
     {
       
@@ -28,6 +30,7 @@ public class PollsController(IPollService pollService) :ControllerBase
 
 
     [HttpGet("Current")]
+    [Authorize(Roles = DefaultRules.MemberRuleName)]
     public async Task<IActionResult> GetCurrent(CancellationToken ct)
     {
 
@@ -38,7 +41,7 @@ public class PollsController(IPollService pollService) :ControllerBase
     }
 
     [HttpGet("{id}")]
-
+    [Authorize(Policy = Permissions.GetPolls)]
     public async Task<ActionResult<PollResponse>> GetPollById( [FromRoute]int id, CancellationToken ct) { 
     
        var result= await _pollService.GetByIdAsync(id,ct)   ;
@@ -50,7 +53,7 @@ public class PollsController(IPollService pollService) :ControllerBase
 
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Policy = Permissions.AddPolls)]
     public async Task<ActionResult<PollResponse>> AddPoll([FromBody] PollRequest request,CancellationToken ct)
     {
         var poll = request.Adapt<Poll>();
@@ -66,7 +69,7 @@ public class PollsController(IPollService pollService) :ControllerBase
 
 
     [HttpPut("{id}")]
-
+    [Authorize(Policy = Permissions.AddPolls)]
     public async Task<IActionResult> updatepoll([FromRoute] int id, [FromBody] PollRequest request, CancellationToken ct)
     {
 
@@ -87,7 +90,7 @@ public class PollsController(IPollService pollService) :ControllerBase
     }
 
     [HttpDelete("{id}")]
-
+    [Authorize(Policy = Permissions.DeletePolls)]
     public async Task<IActionResult> DeletePoll([FromRoute] int id, CancellationToken ct)
     {
 
@@ -102,7 +105,7 @@ public class PollsController(IPollService pollService) :ControllerBase
     }
 
     [HttpPut("{id}/togglePublish")]
-
+    [Authorize(Policy = Permissions.UpdatePolls)]
     public async Task<IActionResult> togglePublishstatus([FromRoute] int id, CancellationToken ct)
     {
 
