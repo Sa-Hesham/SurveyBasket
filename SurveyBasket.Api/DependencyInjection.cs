@@ -1,7 +1,11 @@
 ﻿
 
 using Hangfire;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using SurveyBasket.Api.Dtos.Security.Filtters;
+using SurveyBasket.Api.Services.RolesService;
+using SurveyBasket.Api.Services.UserInfo;
 using SurveyBasket.Api.Services.VoteResultSevices;
 using SurveyBasket.Api.Services.VoteService;
 
@@ -11,7 +15,7 @@ public static class DependencyInjection
     {
 
         Services.AddControllers();
-
+        Services.AddAuthorization();    
         Services.AddHybridCache();
         Services.AddCors(option =>
         {
@@ -27,7 +31,7 @@ public static class DependencyInjection
      
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
-
+        
         Services.AddSwagger();
         Services.AddMapster();
         Services.AddValidion();
@@ -75,7 +79,13 @@ public static class DependencyInjection
         Services.AddScoped<IVoteResultService, VoteResultService> ();
         Services.AddScoped<IPollNotfication, PollNotfication> ();
         Services.AddScoped<IEmailSender, EmailService> ();
+        Services.AddScoped<IUserService, UserService> ();
+        Services.AddScoped<IRoleService, RoleService> ();
+       
+         Services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+       Services.AddScoped<IAuthorizationHandler, PermissionAuthorizeHandler>();
         Services.AddHttpContextAccessor();  
+
   
         Services.AddProblemDetails();
         Services.AddExceptionHandler<GlobalExceptionHandling>();
@@ -91,7 +101,7 @@ public static class DependencyInjection
 
         });
 
-        Services.AddIdentity<ApplicationUser, IdentityRole>()
+        Services.AddIdentity<ApplicationUser, ApplicationRole>()
            .AddEntityFrameworkStores<AppDbContext>()
            .AddDefaultTokenProviders();   
 
@@ -134,7 +144,7 @@ public static class DependencyInjection
         Services.Configure<IdentityOptions>(options =>
         {
             options.Password.RequiredLength = 8; 
-            options.SignIn.RequireConfirmedEmail = true;
+           options.SignIn.RequireConfirmedEmail = true;
             options.User.RequireUniqueEmail = true;
 
         });

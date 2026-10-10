@@ -1,4 +1,6 @@
-﻿namespace SurveyBasket.Api.Persistence.Configuratuins;
+﻿using SurveyBasket.Api.Mapping.Consts;
+
+namespace SurveyBasket.Api.Persistence.Configuratuins;
 
 public class ApplicationUserConfiguration : IEntityTypeConfiguration<ApplicationUser>
 {
@@ -13,7 +15,23 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
            
 
         });
-            
-            
+      
+
+        builder.HasData(new ApplicationUser
+        {
+            Id = DefaultUsers.AdminId,
+            Email = DefaultUsers.AdminEmail,
+            FirstName = "Admin",
+            LastName = "SurveyBasket",
+            UserName = DefaultUsers.AdminEmail,
+            NormalizedUserName = DefaultUsers.AdminEmail.ToUpper(),
+            NormalizedEmail = DefaultUsers.AdminEmail.ToUpper(),
+            SecurityStamp = DefaultUsers.AdminSecurityStamp,
+            ConcurrencyStamp = DefaultUsers.AdminConcurencyStamp,
+            EmailConfirmed = true,
+            PasswordHash =DefaultUsers.AdminPasswordHash,
+
+
+        });
     }
 }

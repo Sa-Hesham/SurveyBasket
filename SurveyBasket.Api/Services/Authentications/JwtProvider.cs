@@ -1,8 +1,11 @@
 ﻿
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace SurveyBasket.Api.Services.Authentications;
 
@@ -10,7 +13,7 @@ public class JwtProvider(IOptions<JWTSetting> JWTOptions) : IJwtProvider
 {
     private readonly JWTSetting _jWTOptions = JWTOptions.Value;
 
-    public (string token, int expiresin) GenerateToken(ApplicationUser user)
+    public (string token, int expiresin) GenerateToken(ApplicationUser user, IEnumerable<string> roles, IEnumerable<string> permissions)
     {
 
 
@@ -20,8 +23,9 @@ public class JwtProvider(IOptions<JWTSetting> JWTOptions) : IJwtProvider
             new Claim(JwtRegisteredClaimNames.Email , user.Email!) ,
             new Claim(JwtRegisteredClaimNames.GivenName , user.FirstName),
             new Claim (JwtRegisteredClaimNames .FamilyName , user.LastName) ,
-            new Claim(JwtRegisteredClaimNames.Jti , Guid.NewGuid().ToString())
-
+            new Claim(JwtRegisteredClaimNames.Jti , Guid.NewGuid().ToString()),
+            new Claim(nameof(roles),JsonSerializer.Serialize(roles),JsonClaimValueTypes.JsonArray),
+            new Claim(nameof(permissions),JsonSerializer.Serialize(permissions),JsonClaimValueTypes.JsonArray)
 
 
             ];

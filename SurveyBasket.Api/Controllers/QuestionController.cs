@@ -4,19 +4,20 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SurveyBasket.Api.Dtos.Errors;
 using SurveyBasket.Api.Dtos.Questions;
+using SurveyBasket.Api.Mapping.Consts;
 using SurveyBasket.Api.Services.Questions;
 
 namespace SurveyBasket.Api.Controllers;
 
 [Route("api/Poll/{PollId}/[controller]")]
 [ApiController]
-
+[Authorize]
 public class QuestionController(IQuestionService questionService) : ControllerBase
 {
     private readonly IQuestionService _questionService = questionService;
 
     [HttpPost]
-
+    [Authorize(Policy = Permissions.AddQuestions)]
     public async Task<IActionResult> AddQuestionasync([FromRoute] int PollId, [FromBody] QuestionRequest request, CancellationToken ct)
     {
 
@@ -33,7 +34,7 @@ public class QuestionController(IQuestionService questionService) : ControllerBa
 
 
     [HttpGet]
-
+    [Authorize(Policy = Permissions.GetQuestions)]
     public async Task<IActionResult> Getall([FromRoute] int PollId, CancellationToken ct)
     {
         var result = await _questionService.GetAllQuestionAsync(PollId, ct);
@@ -47,7 +48,7 @@ public class QuestionController(IQuestionService questionService) : ControllerBa
 
 
     [HttpGet("{id}")]
-
+    [Authorize(Policy = Permissions.GetQuestions)]
     public async Task<IActionResult> GetById([FromRoute] int PollId, [FromRoute] int id, CancellationToken ct)
     {
         var result = await _questionService.GetById(PollId, id, ct);
@@ -63,8 +64,8 @@ public class QuestionController(IQuestionService questionService) : ControllerBa
     }
 
 
-    [HttpPut("{Id}/ToggleStatus")] 
-
+    [HttpPut("{Id}/ToggleStatus")]
+    [Authorize(Policy = Permissions.UpdateQuestions)]
     public async Task<IActionResult>ToggleStatus([FromRoute] int PollId, [FromRoute] int id, CancellationToken ct)
     {
         var result = await _questionService.ToggleStatusAsync(PollId, id, ct);

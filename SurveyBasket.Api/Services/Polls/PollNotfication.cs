@@ -23,9 +23,13 @@ public class PollNotfication(AppDbContext context
             var poll = await _context.Polls.SingleOrDefaultAsync(x=>x.Id == PollId.Value && x.IsPublished );
             polls = [poll!];
         }
+        else
+        {
+            polls = await _context.Polls.Where(x => x.IsPublished && x.SatrtsAt == DateOnly.FromDateTime(DateTime.UtcNow)).ToListAsync();
+        }
 
 
-        polls = await _context.Polls.Where(x => x.IsPublished && x.SatrtsAt == DateOnly.FromDateTime(DateTime.UtcNow)).ToListAsync();
+      
 
 
         // getallusers 

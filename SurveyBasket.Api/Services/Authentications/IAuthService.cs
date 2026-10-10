@@ -13,4 +13,6 @@ public interface IAuthService
 
     Task<Result> ConfirmEmail(ConfirmEmailRequest request, CancellationToken ct = default);
     Task<Result> ResnedEmailConfirmation(ResendConfirmationEmailRequest request);
+    Task<Result> ResendForgetPasswordConfirmation(string email);
+    Task<Result> ResetPassword(ResetPasswordRequest request);
 }

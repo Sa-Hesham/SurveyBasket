@@ -1,10 +1,13 @@
-﻿using SurveyBasket.Api.Data;
+﻿using Hangfire;
+using SurveyBasket.Api.Data;
 using SurveyBasket.Api.Dtos.Errors;
 
 namespace SurveyBasket.Api.Services.Polls;
 
-public class Pollservice(AppDbContext _context) : IPollService
+public class Pollservice(AppDbContext _context ,IPollNotfication notfication) : IPollService
 {
+    private readonly IPollNotfication notfication = notfication;
+
     public async Task<Result<PollResponse>> CreateAsync(Poll poll, CancellationToken ct = default)
     {   
         var IsExist= await _context.Polls.AnyAsync(p=>p.Title == poll.Title,ct)   ;
@@ -70,7 +73,8 @@ public class Pollservice(AppDbContext _context) : IPollService
         var poll = await _context.Polls.SingleOrDefaultAsync(x => x.Id == id, ct); 
 
         if(poll == null) return Result.Failure(PollError.PollIsNotFound);
-        poll.IsPublished = !poll.IsPublished;   
+        poll.IsPublished = !poll.IsPublished;
+        BackgroundJob.Enqueue(() => notfication.SendPollNotifcation(poll.Id));
        return await  _context.SaveChangesAsync(ct)>0 ?Result.Success() : Result.Failure(new("Poll.IsBulished  " ,"IspublishedNotToggeled" , StatusCodes.Status400BadRequest)) ;
     }
 
