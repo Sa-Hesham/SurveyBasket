@@ -4,6 +4,7 @@ using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using SurveyBasket.Api.Dtos.Security.Filtters;
+using SurveyBasket.Api.Services.RolesService;
 using SurveyBasket.Api.Services.UserInfo;
 using SurveyBasket.Api.Services.VoteResultSevices;
 using SurveyBasket.Api.Services.VoteService;
@@ -79,6 +80,7 @@ public static class DependencyInjection
         Services.AddScoped<IPollNotfication, PollNotfication> ();
         Services.AddScoped<IEmailSender, EmailService> ();
         Services.AddScoped<IUserService, UserService> ();
+        Services.AddScoped<IRoleService, RoleService> ();
        
          Services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
        Services.AddScoped<IAuthorizationHandler, PermissionAuthorizeHandler>();
